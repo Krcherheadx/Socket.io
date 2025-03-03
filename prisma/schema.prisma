@@ -14,5 +14,7 @@ datasource db {
 }
 model message{
   id String @id @default(uuid())
+  sender String
   message String 
+  created_at DateTime @default(now())
 }
