@@ -12,9 +12,45 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-model message{
+
+model User {
+  id                   String           @id @default(uuid())
+  name                 String
+  dm_messages_sent     Direct_message[] @relation("SenderDM")
+  dm_messages_received Direct_message[] @relation("ReceiverDM")
+  gm_messages_sent     Group_message[]  @relation("SenderGM")
+  receiver             Group_message[]  @relation("ReceiverGM")
+}
+
+model Direct_message {
   id String @id @default(uuid())
-  sender String
-  message String 
+
+  // Sender Relation
+  sender_id String
+  sender    User   @relation("SenderDM", fields: [sender_id], references: [id])
+
+  // Receiver Relation
+  receiver_id String?
+  receiver    User?   @relation("ReceiverDM", fields: [receiver_id], references: [id])
+
+  message    String
   created_at DateTime @default(now())
+}
+
+//GM stands for Group Message
+model Group_message {
+  id         String   @id @default(uuid())
+  message    String
+  created_at DateTime @default(now())
+  sender_id  String
+  sender     User     @relation("SenderGM", fields: [sender_id], references: [id])
+  receiver   User[]   @relation("ReceiverGM")
+  event_id   String
+  event      Event    @relation("Group", fields: [event_id], references: [id])
+}
+
+model Event {
+  id             String          @id @default(uuid())
+  title          String
+  group_messages Group_message[] @relation("Group")
 }
